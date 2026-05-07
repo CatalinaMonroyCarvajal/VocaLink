@@ -1,0 +1,15 @@
+# Ignorar bases de datos pesadas (¡No queremos subir gigas de audio!)
+dataset/
+data/
+*.wav
+*.mp3
+
+# Archivos de Python y sistema
+__pycache__/
+.DS_Store
+.ipynb_checkpoints/
+venv/
+.env
+
+# Imágenes temporales
+temp_audio.wav
