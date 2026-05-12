@@ -44,17 +44,8 @@ encoder = joblib.load(ENCODER_PATH)
 LABELS  = encoder.categories_[0].tolist()
 log.info(f"Modelo listo. Clases: {LABELS}")
 
-#Feature extraction
-def extract_features(data, sample_rate):
-    result = np.array([])
-    zcr        = np.mean(librosa.feature.zero_crossing_rate(y=data).T, axis=0)
-    stft       = np.abs(librosa.stft(data))
-    chroma     = np.mean(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T, axis=0)
-    mfcc       = np.mean(librosa.feature.mfcc(y=data, sr=sample_rate).T, axis=0)
-    rms        = np.mean(librosa.feature.rms(y=data).T, axis=0)
-    mel        = np.mean(librosa.feature.melspectrogram(y=data, sr=sample_rate).T, axis=0)
-    result = np.hstack([result, zcr, chroma, mfcc, rms, mel])
-    return result
+from Core.dsp_utils import butter_highpass_filter, apply_vad, extract_features
+
 
 def preprocess_audio(filepath: Path) -> np.ndarray:
     """Carga, extrae features, escala y devuelve tensor listo para el modelo."""
