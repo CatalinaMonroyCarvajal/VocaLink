@@ -13,3 +13,6 @@ venv/
 
 # Imágenes temporales
 temp_audio.wav
+
+audio_inbox/*.wav
+audio_processed/
