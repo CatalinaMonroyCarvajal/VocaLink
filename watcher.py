@@ -48,16 +48,28 @@ from Core.dsp_utils import butter_highpass_filter, apply_vad, extract_features
 
 
 def preprocess_audio(filepath: Path) -> np.ndarray:
-    """Carga, extrae features, escala y devuelve tensor listo para el modelo."""
-    data, sr = librosa.load(str(filepath), duration=2.5, offset=0.6)
-    if len(data) < sr * 0.5:
-        data, sr = librosa.load(str(filepath), duration=2.5, offset=0.0)
-    if len(data) < sr * 0.5:
-        data = np.pad(data, (0, int(sr * 2.5) - len(data)), mode='constant')
+    """Carga, aplica filtros de limpieza, VAD, extrae features y escala."""
+    # 1. Carga inicial
+    data, sr = librosa.load(str(filepath), sr=22050, duration=2.5)
+    
+    # 2. LIMPIEZA 
+    data = butter_highpass_filter(data, cutoff=80, fs=sr) # Quita ruidos bajos
+    data = apply_vad(data)                                # Quita silencios
+    
+    # 3. Asegurar duración fija (Padding)
+    target_length = int(sr * 2.5)
+    if len(data) < target_length:
+        data = np.pad(data, (0, target_length - len(data)), mode='constant')
+    else:
+        data = data[:target_length]
+        
+    # 4. Extracción e Inferencia
     features = extract_features(data, sr)
     features_scaled = scaler.transform([features])
-    features_scaled = np.expand_dims(features_scaled, axis=2)   # (1, 162, 1)
+    features_scaled = np.expand_dims(features_scaled, axis=2)
     return features_scaled
+
+
 
 # Inferencia
 def run_inference(filepath: Path) -> dict:
