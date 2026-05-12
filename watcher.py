@@ -16,7 +16,7 @@ from keras.models import load_model
 from pathlib import Path
 from datetime import datetime
 
-# ─── Configuración ───────────────────────────────────────────────────────────
+# Configuración
 WATCH_DIR   = Path("audio_inbox")          # Carpeta donde llegan los .wav del ESP32
 DONE_DIR    = Path("audio_processed")     # Carpeta donde se mueven los archivos procesados
 MODEL_PATH  = Path("Models/vocalink_ninos.keras")
@@ -25,7 +25,7 @@ ENCODER_PATH= Path("Models/encoder.pkl")
 POLL_INTERVAL = 0.5                        # segundos entre checks
 LOG_FILE    = "vocalink_watcher.log"
 
-# ─── Setup logging ────────────────────────────────────────────────────────────
+#Setup loggin
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -36,7 +36,7 @@ logging.basicConfig(
 )
 log = logging.getLogger("vocalink")
 
-# ─── Cargar modelo una sola vez al inicio ────────────────────────────────────
+# Cargar modelo
 log.info("Cargando modelo Vocalink...")
 model   = load_model(MODEL_PATH)
 scaler  = joblib.load(SCALER_PATH)
@@ -44,7 +44,7 @@ encoder = joblib.load(ENCODER_PATH)
 LABELS  = encoder.categories_[0].tolist()
 log.info(f"Modelo listo. Clases: {LABELS}")
 
-# ─── Feature extraction (igual que en entrenamiento) ─────────────────────────
+#Feature extraction
 def extract_features(data, sample_rate):
     result = np.array([])
     zcr        = np.mean(librosa.feature.zero_crossing_rate(y=data).T, axis=0)
@@ -68,7 +68,7 @@ def preprocess_audio(filepath: Path) -> np.ndarray:
     features_scaled = np.expand_dims(features_scaled, axis=2)   # (1, 162, 1)
     return features_scaled
 
-# ─── Inferencia ───────────────────────────────────────────────────────────────
+# Inferencia
 def run_inference(filepath: Path) -> dict:
     """Corre el modelo sobre un archivo y devuelve resultado."""
     X = preprocess_audio(filepath)
@@ -84,7 +84,7 @@ def run_inference(filepath: Path) -> dict:
     }
     return result
 
-# ─── Estado del watcher ───────────────────────────────────────────────────────
+# Esado del watcher
 _seen_files: set = set()
 _new_file_flag = threading.Event()   # flag que cambia de estado cuando llega archivo nuevo
 
@@ -108,7 +108,7 @@ def _on_new_file(filepath: Path):
         log.error(f"Error procesando {filepath.name}: {e}")
         return None
 
-# ─── Loop principal de polling ─────────────────────────────────────────────────
+# Loop principal de pooling
 def watch_loop():
     """Bucle que monitorea WATCH_DIR y dispara inferencia ante archivos nuevos."""
     WATCH_DIR.mkdir(exist_ok=True)
